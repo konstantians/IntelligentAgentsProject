@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35327.3
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntelligentAgents.MVC", "IntelligentAgentsAssignment.MVC\IntelligentAgents.MVC.csproj", "{7630F65E-A457-41CB-BFD0-2DA5075B08E8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntelligentAgents.AuthLibrary", "IntelligentAgents.AuthLibrary\IntelligentAgents.AuthLibrary.csproj", "{CA7BCED5-9760-48F5-81A5-BC9F798AC9B6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntelligentAgents.AuthLibraryAPI", "IntelligentAgents.AuthLibraryAPI\IntelligentAgents.AuthLibraryAPI.csproj", "{0004343E-27ED-4089-A1C5-F0487E613E76}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntelligentAgents.DataLibrary", "IntelligentAgents.DataLibrary\IntelligentAgents.DataLibrary.csproj", "{C0E2C891-061D-4B9D-907E-6F683B6C5445}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntelligentAgents.DataLibraryAPI", "IntelligentAgents.DataLibraryAPI\IntelligentAgents.DataLibraryAPI.csproj", "{4DFAB888-6B28-4C3B-B786-44C0A0126F48}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntelligentAgents.GatewayAPI", "IntelligentAgents.GatewayAPI\IntelligentAgents.GatewayAPI.csproj", "{909083ED-7352-490F-AF1A-99E3EFEF7FEB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7630F65E-A457-41CB-BFD0-2DA5075B08E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7630F65E-A457-41CB-BFD0-2DA5075B08E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7630F65E-A457-41CB-BFD0-2DA5075B08E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7630F65E-A457-41CB-BFD0-2DA5075B08E8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CA7BCED5-9760-48F5-81A5-BC9F798AC9B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA7BCED5-9760-48F5-81A5-BC9F798AC9B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA7BCED5-9760-48F5-81A5-BC9F798AC9B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA7BCED5-9760-48F5-81A5-BC9F798AC9B6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0004343E-27ED-4089-A1C5-F0487E613E76}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0004343E-27ED-4089-A1C5-F0487E613E76}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0004343E-27ED-4089-A1C5-F0487E613E76}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0004343E-27ED-4089-A1C5-F0487E613E76}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C0E2C891-061D-4B9D-907E-6F683B6C5445}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C0E2C891-061D-4B9D-907E-6F683B6C5445}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C0E2C891-061D-4B9D-907E-6F683B6C5445}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C0E2C891-061D-4B9D-907E-6F683B6C5445}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4DFAB888-6B28-4C3B-B786-44C0A0126F48}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DFAB888-6B28-4C3B-B786-44C0A0126F48}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DFAB888-6B28-4C3B-B786-44C0A0126F48}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DFAB888-6B28-4C3B-B786-44C0A0126F48}.Release|Any CPU.Build.0 = Release|Any CPU
+		{909083ED-7352-490F-AF1A-99E3EFEF7FEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{909083ED-7352-490F-AF1A-99E3EFEF7FEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{909083ED-7352-490F-AF1A-99E3EFEF7FEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{909083ED-7352-490F-AF1A-99E3EFEF7FEB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {004F4D2D-EB44-401A-A77F-94191F8F86E0}
+	EndGlobalSection
+EndGlobal
