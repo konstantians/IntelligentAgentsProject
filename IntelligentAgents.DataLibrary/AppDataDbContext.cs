@@ -36,8 +36,6 @@ public class AppDataDbContext : DbContext
     public DbSet<Category> Categories { get; set; }
     public DbSet<Variant> Variants { get; set; }
     public DbSet<Discount> Discounts { get; set; }
-    public DbSet<Coupon> Coupons { get; set; }
-    public DbSet<UserCoupon> UserCoupons { get; set; }
     public DbSet<PaymentOption> PaymentOptions { get; set; }
     public DbSet<ShippingOption> ShippingOptions { get; set; }
 
@@ -106,56 +104,6 @@ public class AppDataDbContext : DbContext
             .Property(discount => discount.Percentage).IsRequired();
 
         base.OnModelCreating(modelBuilder);
-
-        /******************* Coupons *******************/
-        modelBuilder.Entity<Coupon>()
-            .HasIndex(coupon => coupon.Code).IsUnique();
-
-        modelBuilder.Entity<Coupon>()
-            .Property(coupon => coupon.Code).HasMaxLength(50).IsRequired(); //the code can be null since I need it in the orders even if the coupon is user specific(otherwise I could leave it null)
-
-        modelBuilder.Entity<Coupon>()
-            .Property(coupon => coupon.DiscountPercentage).IsRequired();
-
-        modelBuilder.Entity<Coupon>()
-            .Property(coupon => coupon.UsageLimit).IsRequired();
-
-        modelBuilder.Entity<Coupon>()
-            .Property(coupon => coupon.IsUserSpecific).IsRequired();
-
-        modelBuilder.Entity<Coupon>()
-            .Property(coupon => coupon.IsDeactivated).IsRequired();
-
-        modelBuilder.Entity<Coupon>()
-            .Property(coupon => coupon.TriggerEvent).HasMaxLength(50).IsRequired();
-
-        //The start and end date can be null if the event is user specific(I could give them default values, but I do not know if that makes sense)
-        //The DefaultDateIntervalInDays can be null if the event is universal
-
-        /******************* UserCoupons *******************/
-        modelBuilder.Entity<UserCoupon>()
-            .HasOne(userCoupon => userCoupon.Coupon)
-            .WithMany(coupon => coupon.UserCoupons)
-            .HasForeignKey(userCoupon => userCoupon.CouponId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<UserCoupon>()
-            .Property(userCoupon => userCoupon.Code).HasMaxLength(50).IsRequired(); //the code of the userCoupon can be copy pasted if the coupon that creates it is universal
-
-        modelBuilder.Entity<UserCoupon>()
-            .Property(userCoupon => userCoupon.TimesUsed).IsRequired();
-
-        modelBuilder.Entity<UserCoupon>()
-            .Property(coupon => coupon.StartDate).IsRequired();
-
-        modelBuilder.Entity<UserCoupon>()
-            .Property(coupon => coupon.ExpirationDate).IsRequired();
-
-        modelBuilder.Entity<UserCoupon>()
-            .Property(userCoupon => userCoupon.UserId).HasMaxLength(50).IsRequired();
-
-        modelBuilder.Entity<UserCoupon>()
-            .Property(userCoupon => userCoupon.CouponId).IsRequired();
 
         /******************* ShippingOptions *******************/
         modelBuilder.Entity<PaymentOption>()

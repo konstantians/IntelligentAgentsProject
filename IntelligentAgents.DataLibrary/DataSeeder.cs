@@ -1,13 +1,15 @@
 ﻿using Bogus;
 using IntelligentAgents.DataLibrary;
 using IntelligentAgents.DataLibrary.Models;
+using System.Net.Http.Json;
+using System.Text.Json;
 
 public static class DataSeeder
 {
-    public static void Seed(AppDataDbContext context)
+    public static async Task Seed(AppDataDbContext context, HttpClient embeddingMicroserviceHttpClient)
     {
         if (context.Categories.Any() || context.Discounts.Any() || context.Products.Any() || context.ShippingOptions.Any()
-            || context.PaymentOptions.Any() || context.Coupons.Any() || context.Variants.Any() || context.UserCoupons.Any())
+            || context.PaymentOptions.Any() || context.Variants.Any())
         {
             return;
         }
@@ -81,87 +83,90 @@ public static class DataSeeder
             }
             products.Add(product);
         }
+
+        foreach (var product in products)
+        {
+            var categoriesText = product.Categories != null && product.Categories.Any()
+                ? string.Join(", ", product.Categories.Select(c => c.Name))
+                : "no categories";
+
+            var variantsText = string.Join(" ; ", product.Variants.Select(v =>
+            {
+                var discountText = v.DiscountId != null ? ", discounted by " : "";
+                return $"SKU {v.SKU} priced at {v.Price:C} with {v.UnitsInStock} units in stock{discountText}%";
+            }));
+
+            product.Description = $"{product.Name} (Code: {product.Code}) product in categories: {categoriesText}. Variants: {variantsText}.";
+        }
         context.Products.AddRange(products);
         context.SaveChanges();
 
         // 4. Shipping Options - custom options
         var shippingOptions = new List<ShippingOption>
         {
-            new ShippingOption { Id = Guid.NewGuid().ToString(), Name = "Standard Shipping", ExtraCost = 5m, ContainsDelivery = true, CreatedAt = DateTime.Now },
-            new ShippingOption { Id = Guid.NewGuid().ToString(), Name = "Express Shipping", ExtraCost = 15m, ContainsDelivery = true, CreatedAt = DateTime.Now },
-            new ShippingOption { Id = Guid.NewGuid().ToString(), Name = "In-store Pickup", ExtraCost = 0m, ContainsDelivery = false, CreatedAt = DateTime.Now},
-            new ShippingOption { Id = Guid.NewGuid().ToString(), Name = "Drone Delivery", ExtraCost = 25m, ContainsDelivery = true, CreatedAt = DateTime.Now },
+            new ShippingOption { Id = Guid.NewGuid().ToString(), Name = "Standard Shipping", ExtraCost = 5m, ContainsDelivery = true,
+                Description = "Standard Shipping, moderately priced shipping option with extra cost of 5. Includes delivery.", CreatedAt = DateTime.Now},
+            new ShippingOption { Id = Guid.NewGuid().ToString(), Name = "Express Shipping", ExtraCost = 15m, ContainsDelivery = true,
+                Description = "Express Shipping, expensive shipping option with extra cost 15. Includes delivery.", CreatedAt = DateTime.Now },
+            new ShippingOption { Id = Guid.NewGuid().ToString(), Name = "In-store Pickup", ExtraCost = 0m, ContainsDelivery = false,
+                Description = "In-store Pickup, cheapest shipping option with no extra cost. Does not include delivery.", CreatedAt = DateTime.Now},
+            new ShippingOption { Id = Guid.NewGuid().ToString(), Name = "Drone Delivery", ExtraCost = 25m, ContainsDelivery = true,
+                Description = "Drone Delivery, most expensive shipping option with extra cost 25. Includes delivery.", CreatedAt = DateTime.Now },
         };
         context.ShippingOptions.AddRange(shippingOptions);
 
         // 5. Payment Options - custom options
         var paymentOptions = new List<PaymentOption>
         {
-            new PaymentOption { Id = Guid.NewGuid().ToString(), Name = "Credit Card", NameAlias = "card", ExtraCost = 0m, CreatedAt = DateTime.Now},
-            new PaymentOption { Id = Guid.NewGuid().ToString(), Name = "PayPal", NameAlias = "paypal", ExtraCost = 0m, CreatedAt = DateTime.Now},
-            new PaymentOption { Id = Guid.NewGuid().ToString(), Name = "Cash on Delivery", NameAlias = "cod", ExtraCost = 2m, CreatedAt = DateTime.Now },
+            new PaymentOption { Id = Guid.NewGuid().ToString(), Name = "Credit Card", NameAlias = "card", Description="Credit Card payment option (alias: card) with no extra cost.", ExtraCost = 0m, CreatedAt = DateTime.Now},
+            new PaymentOption { Id = Guid.NewGuid().ToString(), Name = "PayPal", NameAlias = "paypal", Description="PayPal payment option (alias: paypal) with no extra cost.", ExtraCost = 0m, CreatedAt = DateTime.Now},
+            new PaymentOption { Id = Guid.NewGuid().ToString(), Name = "Cash on Delivery", NameAlias = "cod", Description="Cash on Delivery most expensive payment option (alias: cod) with extra cost 2.", ExtraCost = 2m, CreatedAt = DateTime.Now },
         };
         context.PaymentOptions.AddRange(paymentOptions);
+        context.SaveChanges();
 
-        // 6. Coupons
-        var coupons = new List<Coupon>();
-        float couponChanceToBeAddedToFirstUser = faker.Random.Float(0.1f, 0.5f);
-        float couponChanceToBeAddedToSecondUser = faker.Random.Float(0.1f, 0.5f);
-        for (int i = 1; i <= 3; i++)
+        //Here try to call the microservice
+        Dictionary<string, string> idDescriptionPairs = new Dictionary<string, string>();
+        foreach (Product product in products)
+            idDescriptionPairs.Add(product.Id!, product.Description!);
+
+        foreach (ShippingOption shippingOption in shippingOptions)
+            idDescriptionPairs.Add(shippingOption.Id!, shippingOption.Description!);
+
+        foreach (PaymentOption paymentOption in paymentOptions)
+            idDescriptionPairs.Add(paymentOption.Id!, paymentOption.Description!);
+
+        var response = await embeddingMicroserviceHttpClient.PostAsJsonAsync("createEmbeddings", new { idDescriptionPairs = idDescriptionPairs });
+        if (!response.IsSuccessStatusCode) //potentionally add some logging there
+            return;
+
+        string responseBody = await response.Content.ReadAsStringAsync();
+        Dictionary<string, float[]> IdEmbeddingPairs = JsonSerializer.Deserialize<Dictionary<string, float[]>>(responseBody)!;
+
+        foreach (KeyValuePair<string, float[]> keyValuePair in IdEmbeddingPairs)
         {
-            var coupon = new Coupon
+            ShippingOption? foundShippingOption = shippingOptions.FirstOrDefault(shippingOption => shippingOption.Id == keyValuePair.Key);
+            if (foundShippingOption is not null)
             {
-                Id = Guid.NewGuid().ToString(),
-                Code = $"Coupon{i:0000}",
-                Description = faker.Lorem.Paragraph(),
-                DiscountPercentage = faker.Random.Int(5, 30),
-                UsageLimit = faker.Random.Int(1, 4),
-
-                StartDate = DateTime.Now,
-                ExpirationDate = DateTime.Now.AddDays(faker.Random.Int(5, 30)),
-                IsUserSpecific = false,
-                TriggerEvent = "NoTrigger",
-                IsDeactivated = false,
-                CreatedAt = DateTime.Now,
-            };
-
-            if (faker.Random.Bool(couponChanceToBeAddedToFirstUser)) //30 percent chance for the coupon to be added to the first user
-            {
-                var userCoupon = new UserCoupon
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    Code = $"UserCoupon{i:0000}-A",
-                    TimesUsed = faker.Random.Int(0, coupon.UsageLimit ?? 0),
-                    StartDate = coupon.StartDate,
-                    ExpirationDate = coupon.ExpirationDate,
-                    CouponId = coupon.Id, //is not needed, but I leave it here for clarity
-                    UserId = "7c9e6679-7425-40de-944b-e07fc1f90ae7", //hardcoded first user id
-                    CreatedAt = DateTime.Now,
-                };
-
-                coupon.UserCoupons.Add(userCoupon);
+                foundShippingOption.Embedding = string.Join(',', keyValuePair.Value);
+                continue;
             }
 
-            if (faker.Random.Bool(couponChanceToBeAddedToSecondUser)) //30 percent chance for the coupon to be added to the first user
+            PaymentOption? foundPaymentOption = paymentOptions.FirstOrDefault(paymentOption => paymentOption.Id == keyValuePair.Key);
+            if (foundPaymentOption is not null)
             {
-                var userCoupon = new UserCoupon
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    Code = $"UserCoupon{i:0000}-B",
-                    TimesUsed = faker.Random.Int(0, coupon.UsageLimit ?? 0),
-                    StartDate = coupon.StartDate,
-                    ExpirationDate = coupon.ExpirationDate,
-                    CouponId = coupon.Id, //is not needed, but I leave it here for clarity
-                    UserId = "b58b4f4e-3c0d-4b8a-9217-0c0a3c1e79f9", //hardcoded second user id
-                    CreatedAt = DateTime.Now,
-                };
+                foundPaymentOption.Embedding = string.Join(',', keyValuePair.Value);
+                continue;
+            }
 
-                coupon.UserCoupons.Add(userCoupon);
-                coupons.Add(coupon);
+            Product? foundProduct = products.FirstOrDefault(product => product.Id == keyValuePair.Key);
+            if (foundProduct is not null)
+            {
+                foundProduct.Embedding = string.Join(',', keyValuePair.Value);
+                continue;
             }
         }
 
-        context.Coupons.AddRange(coupons);
         context.SaveChanges();
     }
 }

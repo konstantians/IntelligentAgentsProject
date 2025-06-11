@@ -17,9 +17,10 @@ public class Program()
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
-        builder.Services.AddHttpClient("AuthApiClient", client =>
+
+        builder.Services.AddHttpClient("EmbeddingMicroserviceApiClient", client =>
         {
-            client.BaseAddress = new Uri(configuration["AuthApiBaseUrl"]!);
+            client.BaseAddress = new Uri("http://127.0.0.1:8000/");
         });
         builder.Services.AddHttpClient("DataApiClient", client =>
         {

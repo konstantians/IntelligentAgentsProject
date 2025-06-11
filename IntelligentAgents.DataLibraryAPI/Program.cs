@@ -8,11 +8,16 @@ namespace IntelligentAgents.DataLibraryAPI;
 
 public class Program()
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
         IConfiguration configuration = builder.Configuration;
         // Add services to the container.
+
+        builder.Services.AddHttpClient("EmbeddingMicroserviceApiClient", client =>
+        {
+            client.BaseAddress = new Uri("http://127.0.0.1:8000/");
+        });
 
         builder.Services.AddControllers().AddNewtonsoftJson(options =>
         {
@@ -30,17 +35,20 @@ public class Program()
         builder.Services.AddScoped<IProductDataAccess, ProductDataAccess>();
         builder.Services.AddScoped<IVariantDataAccess, VariantDataAccess>();
         builder.Services.AddScoped<IDiscountDataAccess, DiscountDataAccess>();
-        builder.Services.AddScoped<ICouponDataAccess, CouponDataAccess>();
         builder.Services.AddScoped<IPaymentOptionDataAccess, PaymentOptionDataAccess>();
         builder.Services.AddScoped<IShippingOptionDataAccess, ShippingOptionDataAccess>();
         builder.Services.AddScoped<IQueryDataAccess, QueryDataAccess>();
+        builder.Services.AddScoped<IEmbeddingsDataAccess, EmbeddingsDataAccess>();
 
         var app = builder.Build();
         using (var scope = app.Services.CreateScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<AppDataDbContext>();
+            var httpClientFactory = scope.ServiceProvider.GetRequiredService<IHttpClientFactory>();
+            var httpClient = httpClientFactory.CreateClient("EmbeddingMicroserviceApiClient");
             context.Database.Migrate();
-            DataSeeder.Seed(context);
+
+            await DataSeeder.Seed(context, httpClient);
         }
 
         // Configure the HTTP request pipeline.

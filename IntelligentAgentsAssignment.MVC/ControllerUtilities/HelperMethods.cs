@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Text.Json;
 
@@ -7,30 +6,6 @@ namespace IntelligentAgents.MVC.ControllerUtilities;
 
 public static class HelperMethods
 {
-    public static bool BasicTokenValidation(HttpRequest httpRequest)
-    {
-        var accessToken = httpRequest.Cookies["IntelligentAgentsAuthenticationCookie"];
-        if (string.IsNullOrEmpty(accessToken))
-            return false;
-
-        //basic check for possible tempering
-        string[] parts = accessToken.Split('.');
-        if (parts.Length != 3)
-            return false;
-
-        return true;
-    }
-
-    public static string GetUserIdFromCookie(HttpRequest httpRequest)
-    {
-        var accessToken = httpRequest.Cookies["IntelligentAgentsAuthenticationCookie"];
-        var handler = new JwtSecurityTokenHandler();
-        var token = handler.ReadJwtToken(accessToken); // from cookie
-        var userId = token.Claims.First(c => c.Type == "sub").Value;
-
-        return userId!;
-    }
-
     public static async Task<IActionResult?> CommonErrorValidation(Controller controller, ILogger logger, HttpResponseMessage response, string? responseBody, string redirectToAction,
         string redirectToController, object? routeValues = null, bool responseBodyWasPassedIn = false)
     {

@@ -29,25 +29,6 @@ public class VariantController : ControllerBase
         }
     }
 
-    //this endpoint understands queries like: domain/endpoint/includeDeactivated/true?skus=sku1,sku2,skue3
-    //or domain/endpoint/includeDeactivated/true?skus=sku1&skus=sku2&skus=sku3
-    [HttpGet("GetVariantsBySkus")]
-    public async Task<IActionResult> GetVariantsBySkus([FromQuery] List<string> skus)
-    {
-        try
-        {
-            if (skus.Count == 1 && skus[0].Contains(','))
-                skus = skus[0].Split(',').ToList();
-
-            ReturnVariantsAndCodeResponseModel response = await _variantDataAccess.GetVariantByTheirSKUsAsync(skus);
-            return Ok(response.Variants);
-        }
-        catch (Exception)
-        {
-            return StatusCode(500);
-        }
-    }
-
     [HttpGet("Id/{id}")]
     public async Task<IActionResult> GetVariantById(string id)
     {

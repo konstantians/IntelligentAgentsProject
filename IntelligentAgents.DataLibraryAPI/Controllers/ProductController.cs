@@ -29,20 +29,6 @@ public class ProductController : ControllerBase
         }
     }
 
-    [HttpGet("Category/{category}/Amount/{amount}")]
-    public async Task<IActionResult> GetProductsByCategory(string category, int amount)
-    {
-        try
-        {
-            ReturnProductsAndCodeResponseModel response = await _productDataAccess.GetProductsOfCategoryAsync(category, amount);
-            return Ok(response.Products);
-        }
-        catch (Exception)
-        {
-            return StatusCode(500);
-        }
-    }
-
     [HttpGet("{id}")]
     public async Task<IActionResult> GetProductById(string id)
     {

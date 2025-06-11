@@ -6,4 +6,6 @@ public class AnswerUserQueryModel
 {
     [Required]
     public string? UserQuery { get; set; }
+    public int TablesRowsThatShouldBeReturned { get; set; }
+    public string? ModelId { get; set; }
 }

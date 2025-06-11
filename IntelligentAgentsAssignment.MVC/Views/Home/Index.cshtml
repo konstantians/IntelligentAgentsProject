@@ -1,8 +1,635 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Intelligent Assitant Chat";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<style>
+    .custom-center-modal {
+        top: 80px;
+        left: 50%;
+        transform: translate(-50%) !important;
+        width: 600px !important;
+    }
+
+    .modal-confirm {
+        width: 600px;
+    }
+
+    .modal-confirm .modal-content {
+        padding: 20px;
+        border-radius: 5px;
+        border: none;
+        overflow: visible;
+    }
+
+        .modal-confirm .modal-header {
+            border-bottom: none;
+            position: relative;
+            justify-content: center;
+        }
+
+        .modal-confirm h4 {
+            text-align: center;
+            font-size: 26px;
+            margin: 30px 0 -15px;
+        }
+
+        .modal-confirm .btn {
+            min-height: 38px;
+        }
+
+        .modal-confirm .modal-footer {
+            border: none;
+            text-align: center;
+            border-radius: 5px;
+            font-size: 13px;
+        }
+
+        .modal-confirm.modal-dialog {
+            margin-top: 40px;
+        }
+
+        .modal-confirm .icon-box {
+            color: #fff;
+            position: absolute;
+            margin: 0 auto;
+            left: 0;
+            right: 0;
+            top: -60px;
+            width: 80px; /*90*/
+            height: 80px; /*90*/
+            border-radius: 50%;
+            z-index: 9;
+            background: #0d6efd;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1);
+        }
+
+            .modal-confirm .icon-box i {
+                font-size: 45px; /*58*/
+                position: relative;
+                top: 3px;
+            }
+</style>
+
+<div class="row g-4">
+    <div class="col-3">
+        <div class="shadow p-3" style="height: 87vh; overflow-y:auto;">
+            <h3 class="text-center">Settings</h3>
+            <div class="mb-3">
+                <label for="modeSelect">Mode:</label>
+                <select class="form-select" id="modeSelect">
+                    <option value="Rag" selected>Rag/Embedding Mode</option>
+                    <option value="Tool">Tool Mode</option>
+                    <option value="Sql">Sql Generation Mode</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="modelIdInput">Model Id:</label>
+                <input type="text" class="form-control" value="phi4-mini" id="modelIdInput">
+                <span class="text-danger" id="modelIdValidationSpan"></span>
+            </div>
+            <div class="mb-3">
+                <label for="maxReturnedRowsInput">Max Returned Rows:</label>
+                <input type="number" class="form-control" value="3" id="maxReturnedRowsInput">
+                <span class="text-danger" id="maxReturnedRowsValidationSpan"></span>
+            </div>
+            <hr>
+            <label for="userQueryTextArea">Your Query</label>
+            <textarea rows="5" class="form-control" id="userQueryTextArea" data-is-validated="false"></textarea>
+            <span class="text-danger" id="userQueryValidationSpan"></span>
+            <div class="mt-2 text-end">
+                <button class="btn btn-primary" id="sendRequestButton">Send Request</button>
+            </div>
+
+            <h3 class="text-center mt-3">Statistics</h3>
+            <div class="d-flex justify-content-between">
+                <span>Processing Time:</span>
+                <span id="processingTimeSpan">N/A</span>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <span>Tool/Function Category Selection Retries:</span>
+                <span id="toolSelectionRetriesSpan">N/A</span>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <span>Endpoint Generation Retries:</span>
+                <span id="endpointGenerationRetriesSpan">N/A</span>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <span>Sql Generation Retries:</span>
+                <span id="sqlQueryGenerationRetriesSpan">N/A</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-9">
+        <div class="shadow p-3" style="height: 87vh; overflow-y:auto;position: relative;">
+            <h3 class="text-center">Planning And Execution Steps</h3>
+            <div class="row gy-4" id="ragModeSection">
+                <div class="col-4">
+                    <label for="">1. Initial Query</label>
+                    <div class="d-flex align-items-center">
+                        <div class="col-10 pe-2">
+                            <textarea class="form-control firstStepTextArea" rows="8" readonly></textarea>
+                        </div>
+                        <div class="col-2">
+                            <img src="/Images/arrow.png" style="height:80px;width:80px;" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-4 ps-0">
+                    <label for="">2. Embedding Of Input</label>
+                    <div class="d-flex align-items-center">
+                        <div class="col-10 pe-2">
+                            <textarea class="form-control secondStepTextArea" rows="8" readonly></textarea>
+                        </div>
+                        <div class="col-2">
+                            <img src="/Images/arrow.png" style="height:80px;width:80px;" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-4 ps-0">
+                    <label for="">3. Retrieved Embeddings From API</label>
+                    <div class="d-flex align-items-center">
+                        <div class="col-10 pe-2">
+                            <textarea class="form-control thirdStepTextArea" rows="8" readonly></textarea>
+                        </div>
+                        <div class="col-2">
+                            <img src="/Images/arrow.png" style="height:80px;width:80px;" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-4">
+                    <label for="">4. Calculated Distances(smallest k)</label>
+                    <div class="d-flex align-items-center">
+                        <div class="col-10 pe-2">
+                            <textarea class="form-control fourthStepTextArea" rows="8" readonly></textarea>
+                        </div>
+                        <div class="col-2">
+                            <img src="/Images/arrow.png" style="height:80px;width:80px;" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-4 ps-0">
+                    <label for="">5. Returned Json From API</label>
+                    <div class="d-flex align-items-center">
+                        <div class="col-10 pe-2">
+                            <textarea class="form-control fifthStepTextArea" rows="8" readonly></textarea>
+                        </div>
+                        <div class="col-2">
+                            <img src="/Images/arrow.png" style="height:80px;width:80px;" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-4 ps-0">
+                    <label for="">6. LLM Final Response</label>
+                    <div class="d-flex align-items-center">
+                        <div class="col-10 pe-2">
+                            <textarea class="form-control finalStepTextArea" rows="8" readonly></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row gy-4 d-none" id="toolModeSection">
+                <div class="col-4">
+                    <label for="">1. Initial Query</label>
+                    <div class="d-flex align-items-center">
+                        <div class="col-10 pe-2">
+                            <textarea class="form-control firstStepTextArea" rows="8" readonly></textarea>
+                        </div>
+                        <div class="col-2">
+                            <img src="/Images/arrow.png" style="height:80px;width:80px;" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-4 ps-0">
+                    <label for="">2. LLM Chosen Tool/Function Category</label>
+                    <div class="d-flex align-items-center">
+                        <div class="col-10 pe-2">
+                            <textarea class="form-control secondStepTextArea" rows="8" readonly></textarea>
+                        </div>
+                        <div class="col-2">
+                            <img src="/Images/arrow.png" style="height:80px;width:80px;" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-4 ps-0">
+                    <label for="">3. LLM Generated Function Endpoint</label>
+                    <div class="d-flex align-items-center">
+                        <div class="col-10 pe-2">
+                            <textarea class="form-control thirdStepTextArea" rows="8" readonly></textarea>
+                        </div>
+                        <div class="col-2">
+                            <img src="/Images/arrow.png" style="height:80px;width:80px;" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-4">
+                    <label for="">4. Returned Json From Api</label>
+                    <div class="d-flex align-items-center">
+                        <div class="col-10 pe-2">
+                            <textarea class="form-control fourthStepTextArea" rows="8" readonly></textarea>
+                        </div>
+                        <div class="col-2">
+                            <img src="/Images/arrow.png" style="height:80px;width:80px;" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-4 ps-0">
+                    <label for="">5. LLM Final Response</label>
+                    <div class="d-flex align-items-center">
+                        <div class="col-10 pe-2">
+                            <textarea class="form-control finalStepTextArea" rows="8" readonly></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row gy-4 d-none" id="sqlGenerationModeSection">
+                <div class="col-4">
+                    <label for="">1. Initial Query</label>
+                    <div class="d-flex align-items-center">
+                        <div class="col-10 pe-2">
+                            <textarea class="form-control firstStepTextArea" rows="8" readonly></textarea>
+                        </div>
+                        <div class="col-2">
+                            <img src="/Images/arrow.png" style="height:80px;width:80px;" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-4 ps-0">
+                    <label for="">2. LLM Generated Sql Query</label>
+                    <div class="d-flex align-items-center">
+                        <div class="col-10 pe-2">
+                            <textarea class="form-control secondStepTextArea" rows="8" readonly></textarea>
+                        </div>
+                        <div class="col-2">
+                            <img src="/Images/arrow.png" style="height:80px;width:80px;" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-4 ps-0">
+                    <label for="">3. Validated LLM Sql Query</label>
+                    <div class="d-flex align-items-center">
+                        <div class="col-10 pe-2">
+                            <textarea class="form-control thirdStepTextArea" rows="8" readonly></textarea>
+                        </div>
+                        <div class="col-2">
+                            <img src="/Images/arrow.png" style="height:80px;width:80px;" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-4">
+                    <label for="">4. Validated & Cleaned Sql Query</label>
+                    <div class="d-flex align-items-center">
+                        <div class="col-10 pe-2">
+                            <textarea class="form-control fourthStepTextArea" rows="8" readonly></textarea>
+                        </div>
+                        <div class="col-2">
+                            <img src="/Images/arrow.png" style="height:80px;width:80px;" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-4 ps-0">
+                    <label for="">5. Returned Json From API</label>
+                    <div class="d-flex align-items-center">
+                        <div class="col-10 pe-2">
+                            <textarea class="form-control fifthStepTextArea" rows="8" readonly></textarea>
+                        </div>
+                        <div class="col-2">
+                            <img src="/Images/arrow.png" style="height:80px;width:80px;" />
+                        </div>
+                    </div>
+                </div>
+                <div class="col-4 ps-0">
+                    <label for="">6. LLM Final Response</label>
+                    <div class="d-flex align-items-center">
+                        <div class="col-10 pe-2">
+                            <textarea class="form-control finalStepTextArea" rows="8" readonly></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="loadingSpinnerOverlay" class="d-flex flex-column justify-content-center align-items-center position-absolute top-0 start-0 w-100 h-100 bg-white d-none" style="z-index: 100;">
+                <h4 class="mb-3 text-primary">Please Wait...</h4> <div class="spinner-border text-primary" role="status" style="width: 5rem; height: 5rem;">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-3 text-secondary">Time Elapsed: <span id="elapsedTime">00:00</span></p>
+            </div>
+        </div>
+    </div>
 </div>
+
+<div class="modal fade custom-center-modal modal-result" data-bs-backdrop="static" id="resultModal" data-testid="resultModal" data-popUpValue="" tabindex="-1">
+    <div class="modal-dialog modal-confirm">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <div class="icon-box">
+                    <i class="fa-solid fa-xmark"></i>
+                </div>
+                <h4 class="modal-title w-100" id="myModalLabel"></h4>
+            </div>
+            <div class="modal-body">
+                <p></p>
+            </div>
+            <div class="modal-footer d-flex justify-content-center">
+                <button class="btn btn-primary w-75" data-bs-dismiss="modal" data-testid="resultModalCloseButton">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const modeSelect = document.getElementById('modeSelect');
+    const maxReturnedRowsInput = document.getElementById('maxReturnedRowsInput');
+    const modelIdInput = document.getElementById('modelIdInput');
+    const userQueryTextArea = document.getElementById('userQueryTextArea');
+    const sendRequestButton = document.getElementById('sendRequestButton');
+
+    //validation spans
+    const modelIdValidationSpan = document.getElementById("modelIdValidationSpan");
+    const maxReturnedRowsValidationSpan = document.getElementById("maxReturnedRowsValidationSpan");
+    const userQueryValidationSpan = document.getElementById("userQueryValidationSpan");
+
+    //spinner variables
+    const loadingSpinnerOverlay = document.getElementById('loadingSpinnerOverlay');
+    const elapsedTimeSpan = document.getElementById('elapsedTime');
+    let startTime;
+    let timerInterval;
+
+    //statistics variables
+    let processingTimeSpan = document.getElementById('processingTimeSpan');
+    let toolSelectionRetriesSpan = document.getElementById('toolSelectionRetriesSpan');
+    let sqlQueryGenerationRetriesSpan = document.getElementById('sqlQueryGenerationRetriesSpan');
+    let endpointGenerationRetriesSpan = document.getElementById('endpointGenerationRetriesSpan');
+
+    const sections = {
+        "Rag": "ragModeSection",
+        "Tool": "toolModeSection",
+        "Sql": "sqlGenerationModeSection"
+    };
+
+    function updateSections() {
+        const selected = modeSelect.value;
+        for (const [key, id] of Object.entries(sections)) {
+            document.getElementById(id).classList.toggle("d-none", key !== selected);
+        }
+
+        document.querySelectorAll('.firstStepTextArea').forEach(textarea => {
+            textarea.value = '';
+        });
+        document.querySelectorAll('.secondStepTextArea').forEach(textarea => {
+            textarea.value = '';
+        });
+        document.querySelectorAll('.thirdStepTextArea').forEach(textarea => {
+            textarea.value = '';
+        });
+        document.querySelectorAll('.fourthStepTextArea').forEach(textarea => {
+            textarea.value = '';
+        });
+        document.querySelectorAll('.fifthStepTextArea').forEach(textarea => {
+            textarea.value = '';
+        });
+        document.querySelectorAll('.finalStepTextArea').forEach(textarea => {
+            textarea.value = '';
+        });
+
+        processingTimeSpan.textContent = "N/A";
+        toolSelectionRetriesSpan.textContent = "N/A";
+        sqlQueryGenerationRetriesSpan.textContent = "N/A";
+        endpointGenerationRetriesSpan.textContent = "N/A";
+    }
+
+    modeSelect.addEventListener('change', updateSections);
+
+    sendRequestButton.addEventListener('click', () => {
+        if(modelIdValidationSpan.textContent !== "" || maxReturnedRowsValidationSpan.textContent !== "" || userQueryValidationSpan.textContent !== ""){
+            return;
+        }
+
+        Array.from(document.querySelectorAll('.secondStepTextArea')).find(el => el.offsetParent !== null).value = "";
+        Array.from(document.querySelectorAll('.thirdStepTextArea')).find(el => el.offsetParent !== null).value = "";
+        Array.from(document.querySelectorAll('.fourthStepTextArea')).find(el => el.offsetParent !== null).value = "";
+        Array.from(document.querySelectorAll('.fifthStepTextArea')).find(el => el.offsetParent !== null).value = "";
+        Array.from(document.querySelectorAll('.finalStepTextArea')).find(el => el.offsetParent !== null).value = "";
+
+        const visibleFirstTextArea = Array.from(document.querySelectorAll('.firstStepTextArea')).find(el => el.offsetParent !== null);
+        visibleFirstTextArea.value = userQueryTextArea.value;
+        userQueryTextArea.disabled = true; 
+        sendRequestButton.disabled = true;
+        modeSelect.disabled = true;
+
+        processingTimeSpan.textContent = "N/A";
+        toolSelectionRetriesSpan.textContent = "N/A";
+        sqlQueryGenerationRetriesSpan.textContent = "N/A";
+        endpointGenerationRetriesSpan.textContent = "N/A";
+        clearInterval(timerInterval); // this line is probably not necessary, but I will leave it here for security
+        elapsedTimeSpan.textContent = '00:00'; //we reset the timer
+        loadingSpinnerOverlay.classList.remove('d-none');
+        startTime = Date.now();
+        timerInterval = setInterval(() => {
+            const currentTime = Date.now();
+            const elapsedSeconds = Math.floor((currentTime - startTime) / 1000);
+            const minutes = Math.floor(elapsedSeconds / 60);
+            const seconds = elapsedSeconds % 60;
+
+            //some nice styling for the timer with the padStart
+            const formattedMinutes = String(minutes).padStart(2, '0');
+            const formattedSeconds = String(seconds).padStart(2, '0');
+            elapsedTimeSpan.textContent = `${formattedMinutes}:${formattedSeconds}`;
+        }, 1000);
+
+        fetch('https://localhost:7024/home/answerUserQuery', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userQuery: userQueryTextArea.value,
+                aiAssistantMode: modeSelect.value,
+                modelId: modelIdInput.value,
+                tablesRowsThatShouldBeReturned: maxReturnedRowsInput.value,
+            })
+        })
+        .then(async response => {
+            if(response.status === 500){
+                showPopUpModal("resultModal", "error", "Unexpected BackEnd Error. Please restart the application or try again in a bit.<br>" +
+                "If this does not fix the error please try a different mode or/and use different input.");
+
+                visibleFirstTextArea.value = "";
+                return null;
+            }
+            else if(response.status === 503){
+                const errorBody = await response.json();
+                if(errorBody.error === "GatewayAPIError"){
+                    showPopUpModal("resultModal", "Gateway API Error", "There was a connection error with the Gateway API.<br>"+
+                    "For the application to work correctly you will need to make sure that all of the 3 projects of the solution are running:<br>" +
+                    "You can do this by right clicking on solution and choosing the option 'Configure Startup Projects'.<br>" +
+                    "In the menu that appears choose the 'Multiple startup projects' option and make sure all projects other than the IntelligentsAgents.DataLibrary are set to start.");
+                }
+                else if(errorBody.error === "DataMicroserviceError"){
+                    showPopUpModal("resultModal", "Data Microservice Error", "There was a connection error with the Data Microservice.<br>"+
+                    "For the application to work correctly you will need to make sure that all of the 3 projects of the solution are running:<br>" +
+                    "You can do this by right clicking on solution and choosing the option 'Configure Startup Projects'.<br>" +
+                    "In the menu that appears choose the 'Multiple startup projects' option and make sure all projects other than the IntelligentsAgents.DataLibrary are set to start.");
+                }
+                else if(errorBody.error === "EmbeddingMicroserviceError"){
+                    showPopUpModal("resultModal", "Embedding Microservice Error", "There was a connection error with the python embedding microservice.<br>"+
+                    "If you want to use the Rag/Embedding mode make sure that the following are met:<br>" +
+                    "1) The embeddings have been created correctly in the database for each row.<br>" +
+                    "2) The python embedding microservice must be running(open terminal inside folder EmbeddingMicroservice and run command 'uvicorn embedding_controller:app --reload')");
+                }
+                else if(errorBody.error === "LLMError"){
+                    showPopUpModal("resultModal", "LLM Error", "There was a connection error with the LLM.<br>"+
+                    "For the connection to work correctly you need to make sure that the following are met:<br>" +
+                    "1) You have installed Ollama and Ollama is running.<br>" +
+                    "2) You have installed the model that you want to use. You can see all your installed LLMs using the command 'Ollama ls'.<br>" +
+                    "If you are still having issues, that probably means that the model you are trying to use is too heavy and you need to use a ligher model.");
+                }
+
+                visibleFirstTextArea.value = "";
+                return null;
+            }
+            else if(response.status === 400){
+                const errorBody = await response.json();
+                if(errorBody.error === "ToolSelectionError"){
+                    showPopUpModal("resultModal", "Tool/Function Selection Error", "The LLM could not choose a correct tool category.<br>"+
+                    "Please try again with a different input, different model or use a different mode.");
+                    Array.from(document.querySelectorAll('.secondStepTextArea')).find(el => el.offsetParent !== null).value = "Could not be correctly selected";
+                    toolSelectionRetriesSpan.textContent = "5";
+                }
+                if(errorBody.error === "EndpointGenerationError"){
+                    showPopUpModal("resultModal", "Endpoint Generation Error", "The LLM could not generate a correct endpoint based on the tool category and input.<br>"+
+                    "Please try again with a different input, different model or use a different mode.");
+                    Array.from(document.querySelectorAll('.secondStepTextArea')).find(el => el.offsetParent !== null).value = errorBody.stepTwo;
+                    Array.from(document.querySelectorAll('.thirdStepTextArea')).find(el => el.offsetParent !== null).value = "Could not be generated";
+                    toolSelectionRetriesSpan.textContent = errorBody.toolSelectionRetries;
+                    endpointGenerationRetriesSpan.textContent = "5";
+                }
+                if(errorBody.error === "SQLQueryGenerationError"){
+                    showPopUpModal("resultModal", "Sql Query Generation Error", "The LLM could not generate an appropriate sql query with the given input.<br>"+
+                    "Please try again with a different input, different model or use a different mode.");
+                    Array.from(document.querySelectorAll('.secondStepTextArea')).find(el => el.offsetParent !== null).value = errorBody.stepTwo;
+                    Array.from(document.querySelectorAll('.thirdStepTextArea')).find(el => el.offsetParent !== null).value = errorBody.stepThree;
+                    Array.from(document.querySelectorAll('.fourthStepTextArea')).find(el => el.offsetParent !== null).value = errorBody.stepFour;
+                    Array.from(document.querySelectorAll('.fifthStepTextArea')).find(el => el.offsetParent !== null).value = "Could not be retrieved";
+                    sqlQueryGenerationRetriesSpan.textContent = "5";
+                }
+
+                return null;
+            }
+
+            return response.json();
+        })
+        .then(data => {
+            if(data == null){
+                return;
+            }
+
+            Array.from(document.querySelectorAll('.secondStepTextArea')).find(el => el.offsetParent !== null).value = data.stepTwo;
+            Array.from(document.querySelectorAll('.thirdStepTextArea')).find(el => el.offsetParent !== null).value = data.stepThree;
+
+            if(data.stepFive){
+                Array.from(document.querySelectorAll('.fourthStepTextArea')).find(el => el.offsetParent !== null).value = data.stepFour;
+                cleanedJsonString = data.stepFive.replace(/\{/g, '{\n');
+                cleanedJsonString = cleanedJsonString.replace(/\[/g, '[\n');
+                cleanedJsonString = cleanedJsonString.replace(/",/g, '",\n');
+                cleanedJsonString = cleanedJsonString.replace(/,"/g, ',\n"');
+                cleanedJsonString = cleanedJsonString.replace(/\}/g, '\n}\n');
+                cleanedJsonString = cleanedJsonString.replace(/\:/g, ': ');
+                Array.from(document.querySelectorAll('.fifthStepTextArea')).find(el => el.offsetParent !== null).value = cleanedJsonString;
+            }
+            else{
+                cleanedJsonString = data.stepFour.replace(/\{/g, '{\n');
+                cleanedJsonString = cleanedJsonString.replace(/\[/g, '[\n');
+                cleanedJsonString = cleanedJsonString.replace(/",/g, '",\n');
+                cleanedJsonString = cleanedJsonString.replace(/,"/g, ',\n"');
+                cleanedJsonString = cleanedJsonString.replace(/\}/g, '\n}\n');
+                cleanedJsonString = cleanedJsonString.replace(/\:/g, ': ');
+                Array.from(document.querySelectorAll('.fourthStepTextArea')).find(el => el.offsetParent !== null).value = cleanedJsonString;
+
+            }
+            Array.from(document.querySelectorAll('.finalStepTextArea')).find(el => el.offsetParent !== null).value = data.response;
+
+            if(data.toolSelectionRetries){
+                toolSelectionRetriesSpan.textContent = data.toolSelectionRetries;
+            }
+            if(data.endpointGenerationRetries){
+                endpointGenerationRetriesSpan.textContent = data.endpointGenerationRetries;
+            }
+            if(data.sqlQueryGenerationRetries){
+                sqlQueryGenerationRetriesSpan.textContent = data.sqlQueryGenerationRetries;
+            }
+        })
+        .catch(error => {
+            console.error('Error: ' + error);
+        })
+        .finally(() => {
+            clearInterval(timerInterval);
+            processingTimeSpan.textContent = elapsedTimeSpan.textContent;
+            userQueryTextArea.disabled = false;
+            sendRequestButton.disabled = false;
+            modeSelect.disabled = false;
+            loadingSpinnerOverlay.classList.add('d-none');
+
+        });
+    });
+
+    /* client side validation */
+    modelIdInput.addEventListener("input", function () {
+        if (modelIdInput.value === "") {
+            modelIdValidationSpan.textContent = "This field is required";
+        }
+        else{
+            modelIdValidationSpan.textContent = "";
+        }
+    });
+
+    maxReturnedRowsInput.addEventListener("input", function(){
+        if (maxReturnedRowsInput.value === "") {
+            maxReturnedRowsValidationSpan.textContent = "This field is required";
+        }
+        else if(parseInt(maxReturnedRowsInput.value, 10) <= 0){
+            maxReturnedRowsValidationSpan.textContent = "the returned rows should be at least be one";
+        }
+        else{
+            maxReturnedRowsValidationSpan.textContent = "";
+        }
+    });
+
+    userQueryTextArea.addEventListener("focusout", function(){
+        userQueryTextArea.setAttribute('data-is-validated', "true");
+        //userQueryTextArea.dataset.validated = "true"; do custom attribute here probably
+        if (userQueryTextArea.value === "") {
+            userQueryValidationSpan.textContent = "This field is required";
+        }
+        else{
+            userQueryValidationSpan.textContent = "";
+        }
+    });
+    
+    userQueryTextArea.addEventListener("input", function(){
+        //check custom attribute here probably
+        if (userQueryTextArea.value === "" && userQueryTextArea.getAttribute('data-is-validated') === "true") {
+            userQueryValidationSpan.textContent = "This field is required";
+        }
+        else if(userQueryTextArea.getAttribute('data-is-validated') === "true"){
+            userQueryValidationSpan.textContent = "";
+        }
+    });
+
+    /* server side Validation */
+    function showPopUpModal(modalId, title, message) {
+        const modal = document.getElementById(modalId);
+        modal.querySelector('h4').textContent = title;
+        modal.querySelector('p').innerHTML = message;
+
+        if (typeof resultModal.show === 'function') {
+            console.warn('Found resultModal.show() being called somewhere incorrectly');
+        }
+        const modalInstance = bootstrap.Modal.getOrCreateInstance(modal);
+        modalInstance.show();
+    }
+</script>

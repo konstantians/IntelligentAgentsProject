@@ -25,28 +25,6 @@ namespace IntelligentAgents.DataLibrary.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Coupons",
-                columns: table => new
-                {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Code = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    DiscountPercentage = table.Column<int>(type: "int", nullable: false),
-                    UsageLimit = table.Column<int>(type: "int", nullable: false),
-                    DefaultDateIntervalInDays = table.Column<int>(type: "int", nullable: true),
-                    IsUserSpecific = table.Column<bool>(type: "bit", nullable: false),
-                    IsDeactivated = table.Column<bool>(type: "bit", nullable: false),
-                    TriggerEvent = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    ExpirationDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Coupons", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Discounts",
                 columns: table => new
                 {
@@ -70,7 +48,8 @@ namespace IntelligentAgents.DataLibrary.Migrations
                     NameAlias = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ExtraCost = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Embedding = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -85,7 +64,8 @@ namespace IntelligentAgents.DataLibrary.Migrations
                     Code = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Embedding = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -101,35 +81,12 @@ namespace IntelligentAgents.DataLibrary.Migrations
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ExtraCost = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     ContainsDelivery = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Embedding = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ShippingOptions", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "UserCoupons",
-                columns: table => new
-                {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Code = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    TimesUsed = table.Column<int>(type: "int", nullable: false),
-                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ExpirationDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    CouponId = table.Column<string>(type: "nvarchar(450)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_UserCoupons", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_UserCoupons_Coupons_CouponId",
-                        column: x => x.CouponId,
-                        principalTable: "Coupons",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -196,12 +153,6 @@ namespace IntelligentAgents.DataLibrary.Migrations
                 column: "ProductsId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Coupons_Code",
-                table: "Coupons",
-                column: "Code",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Discounts_Name",
                 table: "Discounts",
                 column: "Name",
@@ -238,11 +189,6 @@ namespace IntelligentAgents.DataLibrary.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserCoupons_CouponId",
-                table: "UserCoupons",
-                column: "CouponId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Variants_DiscountId",
                 table: "Variants",
                 column: "DiscountId");
@@ -272,16 +218,10 @@ namespace IntelligentAgents.DataLibrary.Migrations
                 name: "ShippingOptions");
 
             migrationBuilder.DropTable(
-                name: "UserCoupons");
-
-            migrationBuilder.DropTable(
                 name: "Variants");
 
             migrationBuilder.DropTable(
                 name: "Categories");
-
-            migrationBuilder.DropTable(
-                name: "Coupons");
 
             migrationBuilder.DropTable(
                 name: "Discounts");

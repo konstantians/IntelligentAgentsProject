@@ -29,6 +29,11 @@ public class DiscountDataAccess : IDiscountDataAccess
                     .Take(amount)
                     .ToListAsync();
 
+            //make all embeddings null
+            foreach (var discount in discounts)
+                foreach (var variant in discount?.Variants ?? new List<Variant>())
+                    variant.Product!.Embedding = null;
+
 
             return new ReturnDiscountsAndCodeResponseModel(discounts, DataLibraryReturnedCodes.NoError);
         }
@@ -50,6 +55,10 @@ public class DiscountDataAccess : IDiscountDataAccess
                             .ThenInclude(p => p!.Categories)
                     .FirstOrDefaultAsync(discount => discount.Id!.Contains(id));
 
+            //make all embeddings null
+            foreach (var variant in foundDiscount?.Variants ?? new List<Variant>())
+                variant.Product!.Embedding = null;
+
             return new ReturnDiscountAndCodeResponseModel(foundDiscount!, DataLibraryReturnedCodes.NoError);
         }
         catch (Exception ex)
@@ -69,6 +78,10 @@ public class DiscountDataAccess : IDiscountDataAccess
                         .ThenInclude(v => v.Product)
                             .ThenInclude(p => p!.Categories)
                     .FirstOrDefaultAsync(discount => discount.Name!.Contains(name));
+
+            //make all embeddings null
+            foreach (var variant in foundDiscount?.Variants ?? new List<Variant>())
+                variant.Product!.Embedding = null;
 
             return new ReturnDiscountAndCodeResponseModel(foundDiscount!, DataLibraryReturnedCodes.NoError);
         }

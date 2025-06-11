@@ -25,6 +25,9 @@ public class ShippingOptionDataAccess : IShippingOptionDataAccess
                     .Take(amount)
                     .ToListAsync();
 
+            foreach (var shippingOption in shippingOptions)
+                shippingOption.Embedding = null;
+
             return new ReturnShippingOptionsAndCodeResponseModel(shippingOptions, DataLibraryReturnedCodes.NoError);
         }
         catch (Exception ex)
@@ -42,6 +45,9 @@ public class ShippingOptionDataAccess : IShippingOptionDataAccess
             ShippingOption? foundShippingOption = await _appDataDbContext.ShippingOptions
                     .FirstOrDefaultAsync(shippingOption => shippingOption.Id!.Contains(id));
 
+            if (foundShippingOption is not null)
+                foundShippingOption.Embedding = null;
+
             return new ReturnShippingOptionAndCodeResponseModel(foundShippingOption!, DataLibraryReturnedCodes.NoError);
         }
         catch (Exception ex)
@@ -58,6 +64,9 @@ public class ShippingOptionDataAccess : IShippingOptionDataAccess
         {
             ShippingOption? foundShippingOption = await _appDataDbContext.ShippingOptions
                     .FirstOrDefaultAsync(shippingOption => shippingOption.Name!.Contains(name));
+
+            if (foundShippingOption is not null)
+                foundShippingOption.Embedding = null;
 
             return new ReturnShippingOptionAndCodeResponseModel(foundShippingOption!, DataLibraryReturnedCodes.NoError);
         }

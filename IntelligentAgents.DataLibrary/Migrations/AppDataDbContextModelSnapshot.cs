@@ -58,60 +58,6 @@ namespace IntelligentAgents.DataLibrary.Migrations
                     b.ToTable("Categories");
                 });
 
-            modelBuilder.Entity("IntelligentAgents.DataLibrary.Models.Coupon", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("DefaultDateIntervalInDays")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("DiscountPercentage")
-                        .IsRequired()
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("ExpirationDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool?>("IsDeactivated")
-                        .IsRequired()
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("IsUserSpecific")
-                        .IsRequired()
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("StartDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("TriggerEvent")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<int?>("UsageLimit")
-                        .IsRequired()
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Code")
-                        .IsUnique();
-
-                    b.ToTable("Coupons");
-                });
-
             modelBuilder.Entity("IntelligentAgents.DataLibrary.Models.Discount", b =>
                 {
                     b.Property<string>("Id")
@@ -149,6 +95,9 @@ namespace IntelligentAgents.DataLibrary.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Embedding")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal?>("ExtraCost")
@@ -192,6 +141,9 @@ namespace IntelligentAgents.DataLibrary.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Embedding")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -223,6 +175,9 @@ namespace IntelligentAgents.DataLibrary.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Embedding")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<decimal?>("ExtraCost")
                         .IsRequired()
                         .HasColumnType("decimal(18,2)");
@@ -238,47 +193,6 @@ namespace IntelligentAgents.DataLibrary.Migrations
                         .IsUnique();
 
                     b.ToTable("ShippingOptions");
-                });
-
-            modelBuilder.Entity("IntelligentAgents.DataLibrary.Models.UserCoupon", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("CouponId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("ExpirationDate")
-                        .IsRequired()
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("StartDate")
-                        .IsRequired()
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("TimesUsed")
-                        .IsRequired()
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CouponId");
-
-                    b.ToTable("UserCoupons");
                 });
 
             modelBuilder.Entity("IntelligentAgents.DataLibrary.Models.Variant", b =>
@@ -335,17 +249,6 @@ namespace IntelligentAgents.DataLibrary.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("IntelligentAgents.DataLibrary.Models.UserCoupon", b =>
-                {
-                    b.HasOne("IntelligentAgents.DataLibrary.Models.Coupon", "Coupon")
-                        .WithMany("UserCoupons")
-                        .HasForeignKey("CouponId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Coupon");
-                });
-
             modelBuilder.Entity("IntelligentAgents.DataLibrary.Models.Variant", b =>
                 {
                     b.HasOne("IntelligentAgents.DataLibrary.Models.Discount", "Discount")
@@ -360,11 +263,6 @@ namespace IntelligentAgents.DataLibrary.Migrations
                     b.Navigation("Discount");
 
                     b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("IntelligentAgents.DataLibrary.Models.Coupon", b =>
-                {
-                    b.Navigation("UserCoupons");
                 });
 
             modelBuilder.Entity("IntelligentAgents.DataLibrary.Models.Discount", b =>

@@ -23,6 +23,9 @@ public class PaymentOptionDataAccess : IPaymentOptionDataAccess
         {
             List<PaymentOption> paymentOptions = await _appDataDbContext.PaymentOptions.Take(amount).ToListAsync();
 
+            foreach (var paymentOption in paymentOptions)
+                paymentOption.Embedding = null;
+
             return new ReturnPaymentOptionsAndCodeResponseModel(paymentOptions, DataLibraryReturnedCodes.NoError);
         }
         catch (Exception ex)
@@ -40,6 +43,9 @@ public class PaymentOptionDataAccess : IPaymentOptionDataAccess
             PaymentOption? foundPaymentOption = await _appDataDbContext.PaymentOptions
                     .FirstOrDefaultAsync(paymentOption => paymentOption.Name!.Contains(name));
 
+            if (foundPaymentOption is not null)
+                foundPaymentOption.Embedding = null;
+
             return new ReturnPaymentOptionAndCodeResponseModel(foundPaymentOption!, DataLibraryReturnedCodes.NoError);
         }
         catch (Exception ex)
@@ -56,6 +62,9 @@ public class PaymentOptionDataAccess : IPaymentOptionDataAccess
         {
             PaymentOption? foundPaymentOption = await _appDataDbContext.PaymentOptions
                     .FirstOrDefaultAsync(paymentOption => paymentOption.Id!.Contains(id));
+
+            if (foundPaymentOption is not null)
+                foundPaymentOption.Embedding = null;
 
             return new ReturnPaymentOptionAndCodeResponseModel(foundPaymentOption!, DataLibraryReturnedCodes.NoError);
         }

@@ -3,11 +3,10 @@ namespace IntelligentAgents.GatewayAPI.IntelligentAgentService.IntelligentAgentL
 
 public interface IAiAssistantService
 {
-    Task<string> AskToGenerateQueryAsync(string userRequest);
-    Task<string> AskToValidateGeneratedQueryAsync(string generatedSqlQuery);
-    Task<string> AskForInterpretationOfGeneratedQueryAsync(string userRequest, string generatedSqlQuery, string jsonResultFromDataMicroservice);
-    Task<string> AskToCompareJsonAsync(string userRequest, List<string> generatedJsonSequences);
-    Task<string> AskToChooseEndpointAsync(string userRequest, string toolCategory);
-    Task<string> AskForJsonInterpretation(string userRequest, string jsonResultFromDataMicroservice);
-    Task<string> AskToChooseToolAsync(string userRequest);
+    Task<string> AskToGenerateQueryAsync(string userRequest, int tableRows = 0, string modelId = "phi4-mini");
+    Task<string> AskToValidateGeneratedQueryAsync(string generatedSqlQuery, string modelId = "phi4-mini");
+    Task<string> AskForInterpretationOfReturnedJsonBasedOnSqlQueryAsync(string userRequest, string generatedSqlQuery, string jsonResultFromDataMicroservice, int tableRows = 0, string modelId = "phi4-mini");
+    Task<string> AskToChooseEndpointAsync(string userRequest, string toolCategory, int tableRows = 0, string modelId = "phi4-mini");
+    Task<string> AskForJsonInterpretation(string userRequest, string jsonResultFromDataMicroservice, string modelId = "phi4-mini");
+    Task<string> AskToChooseToolAsync(string userRequest, string modelId = "phi4-mini");
 }

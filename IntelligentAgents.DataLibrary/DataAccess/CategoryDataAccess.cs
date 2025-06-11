@@ -29,6 +29,11 @@ public class CategoryDataAccess : ICategoryDataAccess
                 .Take(amount)
                 .ToListAsync();
 
+            //make all embeddings null
+            foreach (var category in categories)
+                foreach (var product in category.Products)
+                    product.Embedding = null;
+
             return new ReturnCategoriesAndCodeResponseModel(categories, DataLibraryReturnedCodes.NoError);
         }
         catch (Exception ex)
@@ -48,6 +53,11 @@ public class CategoryDataAccess : ICategoryDataAccess
                     .ThenInclude(p => p.Variants)
                         .ThenInclude(v => v.Discount)
                 .FirstOrDefaultAsync(category => category.Id!.Contains(id));
+
+            //make all embeddings null
+            foreach (var product in foundCategory?.Products ?? new List<Product>())
+                product.Embedding = null;
+
             return new ReturnCategoryAndCodeResponseModel(foundCategory!, DataLibraryReturnedCodes.NoError);
         }
         catch (Exception ex)
@@ -67,6 +77,11 @@ public class CategoryDataAccess : ICategoryDataAccess
                     .ThenInclude(p => p.Variants)
                         .ThenInclude(v => v.Discount)
                 .FirstOrDefaultAsync(category => category.Name!.Contains(name));
+
+            //make all embeddings null
+            foreach (var product in foundCategory?.Products ?? new List<Product>())
+                product.Embedding = null;
+
             return new ReturnCategoryAndCodeResponseModel(foundCategory!, DataLibraryReturnedCodes.NoError);
         }
         catch (Exception ex)

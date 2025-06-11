@@ -6,6 +6,5 @@ public interface IVariantDataAccess
 {
     Task<ReturnVariantAndCodeResponseModel> GetVariantByIdAsync(string id);
     Task<ReturnVariantAndCodeResponseModel> GetVariantBySKUAsync(string sku);
-    Task<ReturnVariantsAndCodeResponseModel> GetVariantByTheirSKUsAsync(List<string> skus);
     Task<ReturnVariantsAndCodeResponseModel> GetVariantsAsync(int amount);
 }

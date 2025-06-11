@@ -27,6 +27,16 @@ public class ProductDataAccess : IProductDataAccess
                 .Include(p => p.Variants)
                     .ThenInclude(v => v.Discount)
                 .Take(amount)
+                .Select(product => new Product
+                {
+                    Id = product.Id,
+                    Code = product.Code,
+                    Name = product.Name,
+                    Description = product.Description,
+                    CreatedAt = product.CreatedAt,
+                    Categories = product.Categories,
+                    Variants = product.Variants
+                })
                 .ToListAsync();
             return new ReturnProductsAndCodeResponseModel(products, DataLibraryReturnedCodes.NoError);
         }
@@ -38,37 +48,25 @@ public class ProductDataAccess : IProductDataAccess
         }
     }
 
-    public async Task<ReturnProductsAndCodeResponseModel> GetProductsOfCategoryAsync(string categoryId, int amount)
-    {
-        try
-        {
-            List<Product> products = await _appDataDbContext.Products
-                .Include(p => p.Categories)
-                .Include(p => p.Variants)
-                    .ThenInclude(v => v.Discount)
-                .Where(product => product.Categories.Any(category => category.Id == categoryId)) //add the products that are part of the given category
-                .Take(amount)
-                .ToListAsync();
-
-            return new ReturnProductsAndCodeResponseModel(products, DataLibraryReturnedCodes.NoError);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(new EventId(9999, "GetProductsOfCategoryFailure"), ex, "An error occurred while retrieving the products of category with Id={id}. " +
-                "ExceptionMessage={ExceptionMessage}. StackTrace={StackTrace}.", categoryId, ex.Message, ex.StackTrace);
-            throw;
-        }
-    }
-
     public async Task<ReturnProductAndCodeResponseModel> GetProductByIdAsync(string id)
     {
         try
         {
             Product? foundProduct = await _appDataDbContext.Products
+                .Where(product => product.Id!.Contains(id))
                 .Include(p => p.Categories)
                 .Include(p => p.Variants)
                     .ThenInclude(v => v.Discount)
-                .FirstOrDefaultAsync(product => product.Id!.Contains(id));
+                .Select(product => new Product
+                {
+                    Id = product.Id,
+                    Code = product.Code,
+                    Name = product.Name,
+                    Description = product.Description,
+                    CreatedAt = product.CreatedAt,
+                    Categories = product.Categories,
+                    Variants = product.Variants
+                }).FirstOrDefaultAsync();
 
             return new ReturnProductAndCodeResponseModel(foundProduct!, DataLibraryReturnedCodes.NoError);
         }
@@ -85,10 +83,20 @@ public class ProductDataAccess : IProductDataAccess
         try
         {
             Product? foundProduct = await _appDataDbContext.Products
+                .Where(product => product.Name!.Contains(name))
                 .Include(p => p.Categories)
                 .Include(p => p.Variants)
                     .ThenInclude(v => v.Discount)
-                .FirstOrDefaultAsync(product => product.Name!.Contains(name));
+                .Select(product => new Product
+                {
+                    Id = product.Id,
+                    Code = product.Code,
+                    Name = product.Name,
+                    Description = product.Description,
+                    CreatedAt = product.CreatedAt,
+                    Categories = product.Categories,
+                    Variants = product.Variants
+                }).FirstOrDefaultAsync();
 
             return new ReturnProductAndCodeResponseModel(foundProduct!, DataLibraryReturnedCodes.NoError);
         }
